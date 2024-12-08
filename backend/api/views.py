@@ -4,12 +4,23 @@ from rest_framework import generics
 from .serializers import UserSerializer, NoteSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Note
+from rest_framework.response import Response
+from rest_framework import status
 
 # Create your views here.
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print("Validation Errors:", serializer.errors) 
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class NoteListCreate(generics.ListCreateAPIView):
     serializer_class = NoteSerializer
